@@ -1,0 +1,11 @@
+[Unit]
+After=network.target
+
+[Service]
+Restart=always
+User=radiosnek
+WorkingDirectory=/home/radiosnek
+ExecStart=/usr/bin/env node index.js
+
+[Install]
+WantedBy=multi-user.target

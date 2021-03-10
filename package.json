@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@discordjs/opus": "^0.4.0",
+    "alsa-capture": "^0.2.0",
+    "discord.js": "^12.5.1",
+    "erlpack": "github:discord/erlpack",
+    "selenium-webdriver": "^4.0.0-beta.1",
+    "sodium": "^3.0.2"
+  }
+}
