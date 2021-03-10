@@ -5,7 +5,7 @@ const webdriver = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 
 const timeout = (ms) => new Promise(r => setTimeout(r, ms));
-const chromeOpts = new chrome.Options().headless().windowSize({ width: 640, height: 480 });
+const chromeOpts = new chrome.Options().headless().addArguments("remote-debugging-port=9222", "alsa-output-device=hw:0,0,0");
 const client = new Discord.Client();
 
 client.login(process.env.TOKEN);
@@ -18,6 +18,7 @@ client.on("ready", () => {
 const audioStream = new stream.PassThrough();
 const alsaCapture = new AlsaCapture({
     channels: 2,
+    device: "hw:0,1,0",
     format: "S16_LE",
     periodSize: 480,
     rate: 48000,
@@ -25,6 +26,7 @@ const alsaCapture = new AlsaCapture({
 alsaCapture.on("audio", buf => audioStream.write(buf));
 
 let currentSession = null;
+let voiceConnection = null;
 
 async function spawnDriver(channel) {
     console.log("Request channel:", channel);
@@ -45,16 +47,20 @@ async function spawnDriver(channel) {
     const playBtn = await driver.wait(webdriver.until.elementLocated(webdriver.By.css("a.play-radio")), 5000);
     await playBtn.click();
     console.log("Driver: play clicked");
-    
     client.user.setStatus("online");
     return driver;
 }
 
 async function cleanup() {
-    if(!currentSession) return;
     console.log("Cleanup");
-    await currentSession.quit();
-    currentSession = null;
+    if(voiceConnection) {
+        voiceConnection.disconnect();
+        voiceConnection = null;
+    }
+    if(voiceConnection) {
+        await currentSession.quit();
+        currentSession = null;
+    }
     client.user.setStatus("idle");
 }
 
@@ -62,7 +68,6 @@ client.on('message', async (message) => {
     if (!message.guild) return;
 
     if (message.content?.startsWith("/stream")) {
-        if (!message.content?.startsWith("/stream")) return;
         if (!message.member.voice.channel) return;
 
         const [_, radioChannel] = message.content.split(" ");
@@ -70,13 +75,13 @@ client.on('message', async (message) => {
 
         await cleanup();
         await spawnDriver(radioChannel);
-        const connection = await message.member.voice.channel.join();
+        voiceConnection = await message.member.voice.channel.join();
         console.log("Voice joined:", message.member.voice.channel.name);
-        connection.once("disconnect", () => cleanup());
-        connection.once("failed", () => cleanup());
-        connection.play(audioStream, { type: "converted", bitrate: "auto" });
+        voiceConnection.once("disconnect", () => cleanup());
+        voiceConnection.once("failed", () => cleanup());
+        voiceConnection.play(audioStream, { type: "converted", bitrate: "auto" });
     }
-    
+
     if (message.content?.startsWith("/stop")) {
         cleanup();
     }
