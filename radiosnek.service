@@ -4,7 +4,8 @@ After=network.target
 [Service]
 Restart=always
 User=radiosnek
-WorkingDirectory=/home/radiosnek
+WorkingDirectory=/home/radiosnek/radiosnek
+Environment="TOKEN=XXXXXXXXXXXXXXXX"
 ExecStart=/usr/bin/env node index.js
 
 [Install]
