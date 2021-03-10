@@ -66,8 +66,9 @@ async function cleanup() {
 
 client.on('message', async (message) => {
     if (!message.guild) return;
+    if (message.channel.name !== "radio-hub") return;
 
-    if (message.content?.startsWith("/stream")) {
+    if (message.content?.startsWith("/radio-stream")) {
         if (!message.member.voice.channel) return;
 
         const [_, radioChannel] = message.content.split(" ");
@@ -82,7 +83,7 @@ client.on('message', async (message) => {
         voiceConnection.play(audioStream, { type: "converted", bitrate: "auto" });
     }
 
-    if (message.content?.startsWith("/stop")) {
+    if (message.content?.startsWith("/radio-kill")) {
         cleanup();
     }
 
