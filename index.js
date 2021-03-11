@@ -43,17 +43,27 @@ async function spawnDriver(channel) {
         .build();
     currentSession = driver;
     client.user.setStatus("dnd");
-    const url = `https://radiko.jp/#!/live/${channel}`;
-    await driver.get(url);
-    console.log("Driver: connected", url);
-    await driver.wait(webdriver.until.elementLocated(webdriver.By.css("button.js-policy-accept")), 30000);
-    await driver.executeScript("document.getElementById('colorbox').remove()");
-    await driver.executeScript("document.getElementById('cboxOverlay').remove()");
-    console.log("Driver: overlay removed");
-
-    const playBtn = await driver.wait(webdriver.until.elementLocated(webdriver.By.css("a.play-radio")), 5000);
-    await playBtn.click();
-    console.log("Driver: play clicked");
+    
+    if(channel === "AG+") {
+        const url = "https://www.uniqueradio.jp/agplayer5/inc-player-hls.php";
+        await driver.get(url);
+        console.log("Driver: connected", url);
+        const playBtn = await driver.wait(webdriver.until.elementLocated(webdriver.By.css("button.vjs-big-play-button")), 30000);
+        await playBtn.click();
+        console.log("Driver: play clicked");
+    } else {
+        const url = `https://radiko.jp/#!/live/${channel}`;
+        await driver.get(url);
+        console.log("Driver: connected", url);
+        await driver.wait(webdriver.until.elementLocated(webdriver.By.css("button.js-policy-accept")), 30000);
+        await driver.executeScript("document.getElementById('colorbox').remove()");
+        await driver.executeScript("document.getElementById('cboxOverlay').remove()");
+        console.log("Driver: overlay removed");
+        const playBtn = await driver.wait(webdriver.until.elementLocated(webdriver.By.css("a.play-radio")), 5000);
+        await playBtn.click();
+        console.log("Driver: play clicked");
+    }
+    
     client.user.setStatus("online");
     return driver;
 }
