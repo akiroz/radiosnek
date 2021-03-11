@@ -15,15 +15,20 @@ client.on("ready", () => {
     client.user.setStatus("idle");
 });
 
-const audioStream = new stream.PassThrough();
+let audioStream = null;
 const alsaCapture = new AlsaCapture({
+    debug: true,
     channels: 2,
     device: "hw:0,1,0",
     format: "S16_LE",
-    periodSize: 480,
+    periodSize: 256,
     rate: 48000,
 });
-alsaCapture.on("audio", buf => audioStream.write(buf));
+alsaCapture.on("audio", buf => {
+    if(audioStream && audioStream.writable) {
+        audioStream.write(buf);
+    }
+});
 
 let currentSession = null;
 let voiceConnection = null;
@@ -57,9 +62,13 @@ async function cleanup() {
         voiceConnection.disconnect();
         voiceConnection = null;
     }
-    if(voiceConnection) {
+    if(currentSession) {
         await currentSession.quit();
         currentSession = null;
+    }
+    if(audioStream) {
+        audioStream.end();
+        audioStream = null;
     }
     client.user.setStatus("idle");
 }
@@ -80,6 +89,7 @@ client.on('message', async (message) => {
         console.log("Voice joined:", message.member.voice.channel.name);
         voiceConnection.once("disconnect", () => cleanup());
         voiceConnection.once("failed", () => cleanup());
+        audioStream = new stream.PassThrough();
         voiceConnection.play(audioStream, { type: "converted", bitrate: "auto" });
     }
 
