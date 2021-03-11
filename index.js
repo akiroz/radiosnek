@@ -4,11 +4,13 @@ const Discord = require('discord.js');
 const webdriver = require('selenium-webdriver');
 const chrome = require('selenium-webdriver/chrome');
 
+const { ALOOP, TOKEN, COMMAND } = process.env;
+
 const timeout = (ms) => new Promise(r => setTimeout(r, ms));
-const chromeOpts = new chrome.Options().headless().addArguments("remote-debugging-port=9222", "alsa-output-device=hw:0,0,0");
+const chromeOpts = new chrome.Options().headless().addArguments(`remote-debugging-port=922${ALOOP}`, `alsa-output-device=hw:0,0,${ALOOP}`);
 const client = new Discord.Client();
 
-client.login(process.env.TOKEN);
+client.login(TOKEN);
 
 client.on("ready", () => {
     console.log("Discord ready");
@@ -19,7 +21,7 @@ let audioStream = null;
 const alsaCapture = new AlsaCapture({
     debug: true,
     channels: 2,
-    device: "hw:0,1,0",
+    device: `hw:0,1,${process.env.ALOOP}`,
     format: "S16_LE",
     periodSize: 256,
     rate: 48000,
@@ -76,7 +78,7 @@ async function cleanup() {
 
 client.on('message', async (message) => {
     if (!message.guild) return;
-    if (message.channel.name !== "radio-hub") return;
+    if (message.channel.name !== COMMAND) return;
 
     if (message.content?.startsWith("/radio-stream")) {
         if (!message.member.voice.channel) return;
