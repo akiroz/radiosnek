@@ -63,8 +63,9 @@ async function cleanup() {
         voiceConnection = null;
     }
     if(currentSession) {
-        await currentSession.quit();
+        const session = currentSession;
         currentSession = null;
+        await session.quit();
     }
     if(audioStream) {
         audioStream.end();
