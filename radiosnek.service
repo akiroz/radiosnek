@@ -5,7 +5,9 @@ After=network.target
 Restart=always
 User=radiosnek
 WorkingDirectory=/home/radiosnek/radiosnek
-Environment="TOKEN=XXXXXXXXXXXXXXXX"
+Environment="TOKEN=XXXXXXXXXXXXXXXXXXXXXX"
+Environment="COMMAND=radio-hub"
+Environment="ALOOP=0"
 ExecStart=/usr/bin/env node index.js
 
 [Install]
