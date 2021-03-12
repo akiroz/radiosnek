@@ -95,15 +95,20 @@ client.on('message', async (message) => {
 
         const [_, radioChannel] = message.content.split(" ");
         if (radioChannel.length < 1) return;
-
-        await cleanup();
-        await spawnDriver(radioChannel);
-        voiceConnection = await message.member.voice.channel.join();
-        console.log("Voice joined:", message.member.voice.channel.name);
-        voiceConnection.once("disconnect", () => cleanup());
-        voiceConnection.once("failed", () => cleanup());
-        audioStream = new stream.PassThrough();
-        voiceConnection.play(audioStream, { type: "converted", bitrate: "auto" });
+        
+        try {
+            await cleanup();
+            await spawnDriver(radioChannel);
+            voiceConnection = await message.member.voice.channel.join();
+            console.log("Voice joined:", message.member.voice.channel.name);
+            voiceConnection.once("disconnect", () => cleanup());
+            voiceConnection.once("failed", () => cleanup());
+            audioStream = new stream.PassThrough();
+            voiceConnection.play(audioStream, { type: "converted", bitrate: "auto" });
+        } catch(err) {
+            console.warn("stream error:", err.message);
+            cleanup();
+        }
     }
 
     if (message.content?.startsWith("/radio-kill")) {
